@@ -1,5 +1,7 @@
+require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
+const Person = require('./models/person')
 
 morgan.token('json-body', (req, res) => {
   return JSON.stringify(req.body)
@@ -13,41 +15,22 @@ app.use(morgan('tiny', { skip: (req, res) => req.method === 'POST' }))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :json-body',
       { skip: (req, res) => req.method !== 'POST' }))
 
-let persons = [
-	{   
-		name: "Arto Hellas",
-		number: "040-123456",
-		id: 1
-	},  
-	{   
-		name: "Ada Lovelace",
-		number: "39-44-5323523",
-		id: 2
-	},  
-	{   
-		name: "Dan Abramov",
-		number: "12-43-234345",
-		id: 3
-	},  
-	{   
-		name: "Mary Poppendieck",
-		number: "39-23-6423122",
-		id: 4
-	}   
-]
-
 const generateId = () => {
 	return Math.floor(Math.random() * 1e9)
 }
 
 app.get('/info', (request, response) => {
-	const numString = `<p>Phonebook has ${persons.length} entries</p>`
-	const timeString = `<p>${new Date()}</p>`
-	response.send(numString + timeString)
+  Person.find({}).then(persons => {
+    const numString = `<p>Phonebook has ${persons.length} entries</p>`
+    const timeString = `<p>${new Date()}</p>`
+    response.send(numString + timeString)
+  })
 })
 
 app.get('/api/persons', (request, response) => {
-  response.json(persons)
+  Person.find({}).then(persons => {
+    response.json(persons)
+  })
 })
 
 app.post('/api/persons', (request, response) => {
@@ -64,34 +47,37 @@ app.post('/api/persons', (request, response) => {
 		})
 	}
 
-	if (persons.some(person => person.name === body.name)) {
-		return response.status(400).json({
-			error: `${body.name} already exists in phonebook`
-		})
-	}
+  // allow multiple entries for same name for now
+	// if (persons.some(person => person.name === body.name)) {
+	// 	return response.status(400).json({
+	// 		error: `${body.name} already exists in phonebook`
+	// 	})
+	// }
 
-	const personObject = {
-		name: body.name,
-		number: body.number,
-		id: generateId()
-	}
+  const person = new Person({
+    name: body.name,
+    number: body.number,
+  })
 
-	persons = persons.concat(personObject)
+  person.save().then(savedPerson => {
+    console.log(`${savedPerson.name} - ${savedPerson.number} saved`)
+    response.status(201).json(savedPerson)
+  })
+	// persons = persons.concat(personObject)
 
-	return response.status(201).json(personObject)
+	// return response.status(201).json(personObject)
 })
 
 app.get('/api/persons/:id', (request, response) => {
-	const id = Number(request.params.id)
-	const person = persons.find(person => person.id === id)
-
-	if (person) {
-		response.json(person)
-	} else {
-		response.status(404).json({
-			error: `person with id ${id} not found`
-		})
-	}
+  Person.findById(request.params.id)
+    .then(person => {
+      response.json(person)
+    })
+    .catch((error) => {
+      response.status(404).json({
+        error: `person with id ${request.params.id} not found`
+      })
+    })
 })
 
 app.delete('/api/persons/:id', (request, response) => {
