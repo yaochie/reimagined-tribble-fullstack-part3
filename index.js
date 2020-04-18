@@ -50,12 +50,6 @@ app.post('/api/persons', (request, response) => {
 	}
 
   // allow multiple entries for same name for now
-	// if (persons.some(person => person.name === body.name)) {
-	// 	return response.status(400).json({
-	// 		error: `${body.name} already exists in phonebook`
-	// 	})
-	// }
-
   const person = new Person({
     name: body.name,
     number: body.number,
@@ -65,9 +59,6 @@ app.post('/api/persons', (request, response) => {
     console.log(`${savedPerson.name} - ${savedPerson.number} saved`)
     response.status(201).json(savedPerson)
   })
-	// persons = persons.concat(personObject)
-
-	// return response.status(201).json(personObject)
 })
 
 app.get('/api/persons/:id', (request, response, next) => {
