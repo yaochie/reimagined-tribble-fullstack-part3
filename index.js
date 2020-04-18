@@ -11,9 +11,9 @@ const app = express()
 
 app.use(express.json())
 app.use(express.static('build'))
-app.use(morgan('tiny', { skip: (req, res) => req.method === 'POST' }))
+app.use(morgan('tiny', { skip: (req, res) => req.method === 'POST' || req.method === 'PUT' }))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :json-body',
-      { skip: (req, res) => req.method !== 'POST' }))
+      { skip: (req, res) => req.method !== 'POST' && req.method !== 'PUT' }))
 
 const generateId = () => {
 	return Math.floor(Math.random() * 1e9)
@@ -88,6 +88,23 @@ app.delete('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndRemove(request.params.id)
     .then(result => {
       response.status(204).end()
+    })
+    .catch(error => next(error))
+})
+
+app.put('/api/persons/:id', (request, response, next) => {
+  const body = request.body
+
+  const person = {
+    number: body.number,
+  }
+  if (body.name) {
+    person['name'] = body.name
+  }
+
+  Person.findByIdAndUpdate(request.params.id, person, { new: true })
+    .then(updatedPerson => {
+      response.json(updatedPerson)
     })
     .catch(error => next(error))
 })
