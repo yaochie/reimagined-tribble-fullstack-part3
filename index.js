@@ -26,6 +26,10 @@ let persons = [
 	}   
 ]
 
+const generateId = () => {
+	return Math.floor(Math.random() * 1e9)
+}
+
 app.get('/info', (request, response) => {
 	const numString = `<p>Phonebook has ${persons.length} entries</p>`
 	const timeString = `<p>${new Date()}</p>`
@@ -34,6 +38,37 @@ app.get('/info', (request, response) => {
 
 app.get('/api/persons', (request, response) => {
   response.json(persons)
+})
+
+app.post('/api/persons', (request, response) => {
+	const body = request.body
+
+	if (!body.name) {
+		return response.status(400).json({
+			error: 'name missing'
+		})
+	}
+	if (!body.number) {
+		return response.status(400).json({
+			error: 'number missing'
+		})
+	}
+
+	if (persons.some(person => person.name === body.name)) {
+		return response.status(400).json({
+			error: `${body.name} already exists in phonebook`
+		})
+	}
+
+	const personObject = {
+		name: body.name,
+		number: body.number,
+		id: generateId()
+	}
+
+	persons = persons.concat(personObject)
+
+	return response.status(201).json(personObject)
 })
 
 app.get('/api/persons/:id', (request, response) => {
