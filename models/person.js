@@ -14,14 +14,24 @@ mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
     console.log('error connecting to MongoDB:', error.message)
   })
 
+const numberValidator = number => {
+  // assumes the number only has digits and -
+  return number.replace(/-/g, '').length >= 8
+}
+
 const personSchema = new mongoose.Schema({
   name: {
     type: String,
+    minlength: 3,
     required: true,
     unique: true
   },
   number: {
     type: String,
+    validate: {
+      validator: numberValidator,
+      message: props => `${props.value} has too few digits`
+    },
     required: true
   }
 })
