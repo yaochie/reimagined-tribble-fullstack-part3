@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 if (process.argv.length < 3) {
   console.log('give password, name, number as arguments')
   process.exit(1)
-} else if (process.argv.length == 4) {
+} else if (process.argv.length === 4) {
   console.log('give password, name, number as arguments')
   process.exit(1)
 }
@@ -30,14 +30,14 @@ if (process.argv.length > 3) {
     number: number
   })
 
-  person.save().then(response => {
+  person.save().then(() => {
     console.log(`${name} - ${number} saved`)
     mongoose.connection.close()
   })
 } else {
   // print all
   Person.find({}).then(result => {
-    console.log("phonebook:")
+    console.log('phonebook:')
     result.forEach(person => {
       console.log(person.name, person.number)
     })

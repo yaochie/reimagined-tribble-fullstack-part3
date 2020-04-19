@@ -3,7 +3,7 @@ const express = require('express')
 const morgan = require('morgan')
 const Person = require('./models/person')
 
-morgan.token('json-body', (req, res) => {
+morgan.token('json-body', (req) => {
   return JSON.stringify(req.body)
 })
 
@@ -11,13 +11,10 @@ const app = express()
 
 app.use(express.json())
 app.use(express.static('build'))
-app.use(morgan('tiny', { skip: (req, res) => req.method === 'POST' || req.method === 'PUT' }))
+app.use(morgan('tiny', { skip: (req) => req.method === 'POST' || req.method === 'PUT' }))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :json-body',
-      { skip: (req, res) => req.method !== 'POST' && req.method !== 'PUT' }))
-
-const generateId = () => {
-	return Math.floor(Math.random() * 1e9)
-}
+  { skip: (req) => req.method !== 'POST' && req.method !== 'PUT' })
+)
 
 app.get('/info', (request, response) => {
   Person.find({}).then(persons => {
@@ -27,7 +24,7 @@ app.get('/info', (request, response) => {
   })
 })
 
-app.get('/api/persons', (request, response) => {
+app.get('/api/persons', (request, response, next) => {
   Person.find({})
     .then(persons => {
       response.json(persons)
@@ -36,7 +33,7 @@ app.get('/api/persons', (request, response) => {
 })
 
 app.post('/api/persons', (request, response, next) => {
-	const body = request.body
+  const body = request.body
 
   // allow multiple entries for same name for now
   const person = new Person({
@@ -68,7 +65,7 @@ app.get('/api/persons/:id', (request, response, next) => {
 
 app.delete('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndRemove(request.params.id)
-    .then(result => {
+    .then(() => {
       response.status(204).end()
     })
     .catch(error => next(error))
@@ -92,7 +89,7 @@ app.put('/api/persons/:id', (request, response, next) => {
 })
 
 const unknownEndpoint = (request, response) => {
-  response.status(404).json({ error: "unknown endpoint" })
+  response.status(404).json({ error: 'unknown endpoint' })
 }
 
 app.use(unknownEndpoint)
