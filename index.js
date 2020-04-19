@@ -38,17 +38,6 @@ app.get('/api/persons', (request, response) => {
 app.post('/api/persons', (request, response, next) => {
 	const body = request.body
 
-	if (!body.name) {
-		return response.status(400).json({
-			error: 'name missing'
-		})
-	}
-	if (!body.number) {
-		return response.status(400).json({
-			error: 'number missing'
-		})
-	}
-
   // allow multiple entries for same name for now
   const person = new Person({
     name: body.name,
