@@ -81,6 +81,7 @@ app.put('/api/persons/:id', (request, response, next) => {
     person['name'] = body.name
   }
 
+  // note: doesn't validate!
   Person.findByIdAndUpdate(request.params.id, person, { new: true })
     .then(updatedPerson => {
       response.json(updatedPerson)
